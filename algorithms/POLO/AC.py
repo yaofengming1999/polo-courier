@@ -62,8 +62,8 @@ class PolicyNet(torch.nn.Module):
     def __init__(self, stateDim, actionDim, use_attention=False, attention_heads=2,
                  use_route=False, use_hold_action = True, route_input_dim=2, route_hidden_dim=32):
         super(PolicyNet, self).__init__()
-        self.stateDim = stateDim   # 骑手状态
-        self.actionDim = actionDim  # 动作状态
+        self.stateDim = stateDim   # Courier-state feature dimension.
+        self.actionDim = actionDim  # Order/pair action feature dimension.
         self.use_attention = use_attention
         self.use_route = use_route
         self.route_hidden_dim = route_hidden_dim
@@ -152,9 +152,9 @@ class ValueNet(torch.nn.Module):
     def __init__(self, stateDim, actionDim, use_attention=False, attention_heads=2,
                  use_route=False, route_input_dim=2, route_hidden_dim=32):
         super(ValueNet, self).__init__()
-        self.courierDim = stateDim  # 骑手状态
+        self.courierDim = stateDim  # Courier-state feature dimension.
         # assert self.courierDim == 40
-        self.orderDim = actionDim  # 动作状态
+        self.orderDim = actionDim  # Order/pair action feature dimension.
         # assert self.orderDim == 8
         self.use_attention = use_attention
         self.use_route = use_route
@@ -240,8 +240,8 @@ class TowerActorCritic:
         self.batchSize = batchSize
         self.device = device
 
-    # actor:采取动作
-    def take_action(self, state, routes=None):  # 训练
+    # Actor policy for action selection during training/inference.
+    def take_action(self, state, routes=None):
         state = state.clone().detach().float().to(device)
         if routes is not None:
             routes = routes.clone().detach().float().to(device)
@@ -249,7 +249,7 @@ class TowerActorCritic:
         vOutput = self.actor(state, routes)
         if self.use_hold_action:
             assert vOutput.shape[0] == state.shape[0] + 1  # num_couriers + 1
-        vOutput = vOutput.reshape(-1)  # 将二维张量变为一维张量
+        vOutput = vOutput.reshape(-1)  # Flatten to a 1D logits vector.
         actionProb = torch.softmax(vOutput, dim=0)
         if random.random() > self.epsilon:
             action = torch.max(actionProb,0)[1].cpu()
@@ -257,7 +257,7 @@ class TowerActorCritic:
             actionDist = torch.distributions.Categorical(actionProb)
             action = actionDist.sample().cpu()
             
-        return action.cpu().item()  # 对softmax函数求导时的用法
+        return action.cpu().item()
 
 
     def update(self, state, action, reward, nextState, routes=None, nextRoutes=None):

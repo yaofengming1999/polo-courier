@@ -1,2 +1,7 @@
 *.npy
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+saved/
+wandb/
 env/meituan_order_instance/

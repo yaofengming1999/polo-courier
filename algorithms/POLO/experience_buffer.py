@@ -37,7 +37,7 @@ class ExperienceBuffer:
 
             # agent index
             agent_id = experience['agent_id']
-            self.agent_trajectories.setdefault(agent_id, []).append(global_idx)  # 只存 idx 更轻
+            self.agent_trajectories.setdefault(agent_id, []).append(global_idx)  # Store only indices to keep memory use low.
 
             r = experience['reward']
             v = experience['value']

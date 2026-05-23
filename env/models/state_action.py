@@ -226,26 +226,26 @@ class SimulatorAction:
     rejected_orders: List[str] = None  # order_ids that were rejected
 
     def apply_to_simulator(self, sim: 'Simulator', current_time: int) -> None:
-        # 1. 分配订单, 更改order_stream 中的订单状态
+        # 1. Assign accepted orders and update order state.
         for order_id, (courier_id, pricing) in self.assign_orders.items():
             order = sim.order_by_id.get(order_id)
             courier = sim.courier_by_id.get(courier_id)
             if order and courier:
                 order.status = 2  # assigned
                 order.assigned_courier_id = courier_id
-                order.response_time = current_time - order.create_time  # 记录响应时间
+                order.response_time = current_time - order.create_time  # Record assignment-time latency.
                 order.bump_version()  # Increment version after state change
                 sim.unassigned_order_ids.discard(order_id)  # Remove from unassigned set
                 courier.add_income(order.platform, pricing)
 
-        # 1.5. 处理被拒绝的订单 - 增加拒绝计数
+        # 1.5. Update rejection counters for orders refused by couriers.
         if self.rejected_orders:
             for order_id in self.rejected_orders:
                 order = sim.order_by_id.get(order_id)
                 if order and order.status == 1:  # Only count rejections for unassigned orders
                     order.increment_rejections()
 
-        # 2. 更新每个快递员的 route 和状态
+        # 2. Update each courier route and state.
         for courier_id, route_action in self.courier_actions.items():
             courier = sim.courier_by_id.get(courier_id)
             if not courier:
@@ -253,11 +253,10 @@ class SimulatorAction:
             if len(route_action) == 0:
                 continue
 
-            # 更新 route directly
+            # Update the courier route directly.
             courier.route = [OrderLocation(lon, lat, order_id, location_type)
                             for order_id, location_type, lon, lat in route_action[0]]
             
-            courier.arrive_time = [arrive_t for arrive_t in route_action[1]]  # 更新预计到达时间列表
+            courier.arrive_time = [arrive_t for arrive_t in route_action[1]]  # Refresh the ETA list for the updated route.
             # Increment version after route update
             courier.bump_version()  
-

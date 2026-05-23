@@ -189,4 +189,3 @@ dependencies:
       - tzdata==2026.2
       - urllib3==2.6.3
       - wandb==0.26.1
-prefix: /home/mia1116/miniconda3/envs/courier

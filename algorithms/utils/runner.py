@@ -70,7 +70,7 @@ class Runner:
             raise FileNotFoundError(f"Checkpoint not found: {self.model_load_path}")
         try:
             self.controller.load(self.model_load_path)
-            print(f"✓ Checkpoint loaded successfully!")
+            print("Checkpoint loaded successfully.")
         except Exception as e:
             raise RuntimeError(f"Failed to load checkpoint: {e}")
 

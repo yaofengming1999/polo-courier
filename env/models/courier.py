@@ -174,8 +174,8 @@ class Courier:
         self.route.clear()
         self.route.extend(remaining_tuples)
 
-        self.arrive_time = self.arrive_time[len(visited_order_locations):]  # 更新预计到达时间列表
-        self.arrive_time = [t - time_interval for t in self.arrive_time]  # 减去时间间隔
+        self.arrive_time = self.arrive_time[len(visited_order_locations):]  # Drop visited stops from the ETA list.
+        self.arrive_time = [t - time_interval for t in self.arrive_time]  # Shift remaining ETAs by the elapsed interval.
 
         # Track movement in trajectory — cap at _TRAJ_CAP entries
         if visited_order_locations:
@@ -207,7 +207,7 @@ class Courier:
         if not route:
             # No route, courier is stationary
             self.direction = [0.0, 0.0]
-            return current_location, [], []  # 如果没有路由，直接返回当前位置和空的路由列表
+            return current_location, [], []  # No route: stay in place and return empty visit lists.
 
         # Calculate total distance courier can travel
         # speed is in km/s, time_interval is in seconds, so speed * time_interval gives kilometers
@@ -251,4 +251,3 @@ class Courier:
             self.direction = [0.0, 0.0]
 
         return new_location, remain_route, visited_locations
-

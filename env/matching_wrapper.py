@@ -99,8 +99,8 @@ class Wrapper:
             platform_couriers_amount = self.simulator.get_num_couriers_by_platform(platform)
             total_couriers[platform] = platform_couriers_amount
 
-        # return the global total couriers as well
-        # assert 每个平台的快递员数目相同, 因为快递员是共享的
+        # Return the global total couriers as well.
+        # Couriers are shared, so every platform should report the same count.
         assert len(set(total_couriers.values())) == 1, "Total couriers across platforms should be the same."
         total_couriers['global'] = set(total_couriers.values()).pop()
         return total_couriers
@@ -136,8 +136,8 @@ class Wrapper:
         response_rates = {}
         total_orders_appeared = 0
         for platform in self.platforms:
-            # assert 计算wrapper的订单响应率应该在done之后进行
-            # assert 被response的订单数 = wrapper结束状态时所有被送达的订单数
+            # Order-response statistics are only valid after the episode ends.
+            # Accepted orders should match the number of delivered orders in the final state.
             assert self.done == True
             assert self.simulator.get_num_delivered_orders_by_platform(platform) == self.total_orders_accepted[platform]
             if self.total_orders_appeared[platform] == 0:
@@ -378,7 +378,7 @@ class Wrapper:
                 continue
             else:
                 if self.config.get('fixed_incentive_ratio', True):
-                    # assert assignments中每个元素的长度为2
+                    # Each assignment should be a (courier_id, order_id) pair.
                     assert all(len(a) == 2 for a in assignments), "When fixed_incentive_ratio is True, each assignment must be (courier_id, order_id)."
                     # Calculate incentive based on order value
                     for courier_id, order_id in assignments:
@@ -386,7 +386,7 @@ class Wrapper:
                         incentive = order.value * self.incentive_ratio
                         order_candidate_by_courier[courier_id].append((order_id, incentive, platform_id))
                 else:
-                    # assert assignments中每个元素的长度为3
+                    # Each assignment should be a (courier_id, order_id, incentive) triple.
                     assert all(len(a) == 3 for a in assignments), "When fixed_incentive_ratio is False, each assignment must be (courier_id, order_id, incentive)."
                     for courier_id, order_id, incentive in assignments:
                         order_candidate_by_courier[courier_id].append((order_id, incentive, platform_id))

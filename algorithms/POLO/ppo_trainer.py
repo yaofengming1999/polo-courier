@@ -109,7 +109,7 @@ class PPOTrainer:
         all_old_log_probs = trajectory_data['old_log_probs']  # shape (N,)
         dataset_size = trajectory_data['size']
 
-        # ====== 1) 一次性搬到 device（避免 batch 内反复 .to）======
+        # 1) Move shared tensors to the target device once per update.
         advantages = advantages.to(self.device)
         returns = returns.to(self.device)
         all_old_log_probs = all_old_log_probs.to(self.device)
@@ -124,17 +124,17 @@ class PPOTrainer:
 
         # ====== 2) PPO epochs ======
         for _ in range(self.ppo_epochs):
-            indices = torch.randperm(dataset_size, device=self.device)  # keep on GPU (or CPU也行)
+            indices = torch.randperm(dataset_size, device=self.device)  # Keep the permutation on the current device.
 
             for start in range(0, dataset_size, self.batch_size):
                 end = min(start + self.batch_size, dataset_size)
                 batch_idx = indices[start:end]  # tensor, NOT list
 
-                # ====== 3) 从 experiences 批量组装张量 ======
-                # 固定shape => 可以 stack
+                # 3) Assemble a mini-batch from experiences.
+                # Shapes are fixed, so the tensors can be stacked directly.
                 batch_steps = [experiences[i] for i in batch_idx.tolist()]  
-                # 这里 batch_idx.tolist() 只用于 Python list 索引 experiences；
-                # 关键是：forward 不再逐条做，而是下面一次 stack+一次 forward
+                # batch_idx.tolist() is only used to index the Python list.
+                # The important part is that the forward pass happens in one batch.
 
                 order_features = torch.stack([s['order_features'] for s in batch_steps]).to(self.device)
                 courier_features = torch.stack([s['courier_features'] for s in batch_steps]).to(self.device)
@@ -153,24 +153,24 @@ class PPOTrainer:
                 batch_advantages = advantages[batch_idx]               # (B,)
                 batch_returns = returns[batch_idx]                     # (B,)
 
-                # ====== 4) 一次 Actor forward ======
+                # 4) Single actor forward pass for the whole mini-batch.
                 logits = self.actor(order_features, courier_features,
                                     trajectory_features, route_features, pair_x)
 
-                # 把 logits 整理成 (B, A)
-                # 适配你原来 squeeze(0).squeeze(0) 的情况：常见是 (B,1,1,A) 或 (B,1,A)
+                # Reshape logits to (B, A).
+                # This handles the legacy cases where shapes were (B,1,1,A) or (B,1,A).
                 while logits.dim() > 2:
                     logits = logits.squeeze(1)
-                # 现在 logits 应该是 (B, A)
+                # logits should now be (B, A).
 
-                # ====== 5) 批量计算 new_log_probs & entropy（不用 Categorical）======
+                # 5) Compute log-probabilities and entropy in batch form.
                 logp_all = torch.log_softmax(logits, dim=-1)                 # (B, A)
                 new_log_probs = logp_all.gather(1, actions.unsqueeze(1)).squeeze(1)  # (B,)
 
                 p_all = torch.softmax(logits, dim=-1)                        # (B, A)
                 entropy = -(p_all * logp_all).sum(dim=-1)                    # (B,)
 
-                # ====== 6) 一次 Critic forward ======
+                # 6) Single critic forward pass for the whole mini-batch.
                 values = self.critic(
                     agent_id=agent_id,
                     order_features=order_features,
@@ -182,7 +182,7 @@ class PPOTrainer:
                     current_time=current_time
                 ).squeeze(-1)  # (B,)
 
-                # ====== 7) PPO losses ======
+                # 7) PPO losses.
                 ratio = torch.exp(new_log_probs - batch_old_log_probs)       # (B,)
                 surr1 = ratio * batch_advantages
                 surr2 = torch.clamp(ratio, 1 - self.epsilon_clip, 1 + self.epsilon_clip) * batch_advantages
@@ -193,7 +193,7 @@ class PPOTrainer:
 
                 loss = actor_loss + critic_loss + entropy_loss
 
-                # ====== 8) backward & step（更快的 zero_grad）======
+                # 8) Backward pass and optimizer step.
                 self.actor_optimizer.zero_grad(set_to_none=True)
                 self.critic_optimizer.zero_grad(set_to_none=True)
 

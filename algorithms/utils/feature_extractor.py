@@ -441,13 +441,13 @@ def feature_builder(wrapper_state: Dict[str, SimulatorState], feature_extractor,
                 continue
 
 
-            order = platform_unassigned_order[0] # 取第一个订单
+            order = platform_unassigned_order[0] # Process the first unassigned order in the queue.
 
-            order_features = order_part1[platform_id][order_part2[platform_id][order.order_id]].unsqueeze(0) # 1*订单特征维度
-            candidate_courier_indices = pair_part1[platform_id][order.order_id] # 该订单对应的骑手索引列表
-            pair_features = pair_part2[platform_id][order.order_id] # 订单-骑手特征列表
-            courier_features = torch.stack([courier_part1[platform_id][idx] for idx in candidate_courier_indices])# 骑手特征列表
-            courier_route_features = torch.stack([courier_part3[platform_id][idx] for idx in candidate_courier_indices]) # 骑手路线特征列表 (num_couriers, route_length, 2)
+            order_features = order_part1[platform_id][order_part2[platform_id][order.order_id]].unsqueeze(0) # Shape: (1, order_feature_dim).
+            candidate_courier_indices = pair_part1[platform_id][order.order_id] # Candidate courier indices for this order.
+            pair_features = pair_part2[platform_id][order.order_id] # Order-courier pair features.
+            courier_features = torch.stack([courier_part1[platform_id][idx] for idx in candidate_courier_indices])# Courier feature list.
+            courier_route_features = torch.stack([courier_part3[platform_id][idx] for idx in candidate_courier_indices]) # Courier route features: (num_couriers, route_length, 2).
             courier_trajectory_features = torch.stack([courier_part2[platform_id][idx] for idx in candidate_courier_indices])
             # concate the traject to route
             if controller_type =='MACTowerController':
@@ -465,8 +465,8 @@ def feature_builder(wrapper_state: Dict[str, SimulatorState], feature_extractor,
         return platform_state_built, order_dispatch_map, platform_routes
 
     else:
-        courier_feature = courier_part1[platform_id][courier_index_in_all]# 1*骑手特征维度
-        courier_route_feature = courier_part3[platform_id][courier_index_in_all]  # 骑手路线特征
+        courier_feature = courier_part1[platform_id][courier_index_in_all]# Shape: (1, courier_feature_dim).
+        courier_route_feature = courier_part3[platform_id][courier_index_in_all]  # Route features for the selected courier.
         selected_order_id = None
         pair_map = pair_part1[platform_id]
         least_distance = float('inf')

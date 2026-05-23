@@ -295,22 +295,21 @@ class POLOController(Controller):
                     no_this_order_reward = new_no_this_order_reward - old_reward
 
                     add_distance = pair_features[action][1].item()
-                    # 1. 提取订单价值并【统一量级】(非常重要!!!)
-                    # 既然 calculate_route_reward 返回值除了10，这里也要除以10
+                    # 1. Extract the order value and match the reward scale.
+                    # calculate_route_reward is scaled by 10, so align here too.
                     target_val = self.order_info[order_id]['value'] / 10.0
 
-                    # 2. 计算实际的边际贡献 (Actual Marginal Contribution)
-                    # 含义：加上这个订单后，总分多了多少？
-                    # 如果完美送达且不影响别人，这个值应该等于 target_val
+                    # 2. Compute the actual marginal contribution.
+                    # This is the incremental score gained by adding the order.
+                    # With perfect delivery and no interference, it should match target_val.
                     actual_contribution = real_reward - no_this_order_reward
 
-                    # 3. 计算“对现有系统的破坏” (Disturbance)
-                    # 如果 diff < 0，说明赚的钱比预期的少，意味着有其他订单被挤兑超时了
+                    # 3. Measure the disturbance to the existing route.
+                    # diff < 0 means the added order hurt overall performance.
                     diff = actual_contribution - target_val
 
-                    # 4. 计算 Reward
-                    # 我们只惩罚负面影响。如果 diff > 0 (居然还优化了其他订单)，则不惩罚
-                    # 这里的 0.1 是系数，可以调整
+                    # 4. Build the final reward.
+                    # Only penalize negative side effects; positive spillover is left untouched.
                     penalty = self.counterfactual_ratio * (diff ** 2) if diff < 0 else 0
 
                     distance_penalty = add_distance * self.distance_penalty_ratio  # Small penalty for longer distances

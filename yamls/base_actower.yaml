@@ -38,7 +38,7 @@ epsilon_min: 0.09
 attention_heads: 4
 update_steps: 10
 
-############################## 需要变化的参数
+############################## Common experiment settings to adjust
 instance_size: "small"
 time_start: 12.0
 time_end: 13.0
