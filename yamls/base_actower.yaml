@@ -1,0 +1,56 @@
+fixed_incentive_ratio: true
+incentive_ratio: 0.2 # 
+courier_profit_threshold: 0.0 #no incentive preference is considered in this experiment, but keep it for future use
+late_delivery_compensation_ratio: 1.0
+
+seed: 2026
+is_courier_refuse: true
+time_interval: 120 # change to 3600 to test the slow speed on large scale
+courier_speed: 0.003
+num_test_instances: 50 # run 50 instances for evaluation
+controller_type: "polo"
+is_deep: true
+is_learning: true
+seed: 42
+decision_times_per_step: 500
+batch_size: 256
+buffer_size: 100000
+num_episodes: 5
+num_test_instances: 50
+use_route: true
+# back_length: 10    
+# forward_length: 10 
+reshape_reward: true
+use_direction: false
+use_hold_action: false
+global_reward: false
+route_random_mask: false  
+route_mask_ratio: 0.3     
+courier_feature_dim: 10
+order_feature_dim: 5
+pair_feature_dim: 3
+actor_lr: 0.0002
+critic_lr: 0.0002
+gamma: 0.97
+epsilon: 0.7
+epsilon_decay: 0.97
+epsilon_min: 0.09
+attention_heads: 4
+update_steps: 10
+
+############################## 需要变化的参数
+instance_size: "small"
+time_start: 12.0
+time_end: 13.0
+courier_appearance_ratio: 0.5
+number_of_platforms: 2
+pruning_k: 10
+hex_size: 0.7
+
+temporal_platform_diff: False
+spatial_platform_diff: False
+
+counterfactual_ratio: 0.6
+distance_penalty_ratio: 1.0
+
+use_attention: true
