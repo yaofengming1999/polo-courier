@@ -6,8 +6,10 @@ POLO is a route-aware multi-agent reinforcement learning project for courier-ord
 
 - `algorithms/`: controllers, policy/value networks, and training logic
 - `env/`: simulator, courier/order models, and dispatch environment wrapper
-- `yamls/base_actower.yaml`: main experiment configuration
-- `run_tower.py`: command-line entry point for running experiments
+- `yamls/base_polo_train.yaml`: training configuration
+- `yamls/base_polo_test.yaml`: evaluation configuration
+- `run_polo.py`: command-line entry point for running experiments
+- `saved/`: saved checkpoints such as `latest_model.pt` and `best_model.pt`
 
 ## Requirements
 
@@ -26,26 +28,44 @@ conda activate courier
 
 ## Run
 
-Run with local logging only:
+Run evaluation with local logging only:
 
 ```bash
-python run_tower.py
+python run_polo.py
+```
+
+This uses `yamls/base_polo_test.yaml` by default.
+
+Run training:
+
+```bash
+python run_polo.py --config yamls/base_polo_train.yaml
+```
+
+Run evaluation with an explicit test config:
+
+```bash
+python run_polo.py --config yamls/base_polo_test.yaml
 ```
 
 Run with Weights & Biases enabled:
 
 ```bash
-python run_tower.py --wandb --project polo
+python run_polo.py --config yamls/base_polo_train.yaml --wandb --project polo
 ```
 
-Use a different config file if needed:
+## Checkpoints
+
+The test config loads a checkpoint through `model_load_path`, for example:
 
 ```bash
-python run_tower.py --config yamls/base_actower.yaml
+saved/large/P=2/<run_name>/latest_model.pt
 ```
+
+Update `model_load_path` in `yamls/base_polo_test.yaml` to point at the checkpoint you want to evaluate.
 
 ## Notes
 
 - Generated artifacts such as model checkpoints, notebook checkpoints, and `__pycache__` files are ignored.
-- The default configuration is stored in `yamls/base_actower.yaml`.
-- `run_tower.py` now keeps WandB optional so the project can run without account-specific settings.
+- Use `yamls/base_polo_train.yaml` for training and `yamls/base_polo_test.yaml` for evaluation.
+- `run_polo.py` keeps WandB optional so the project can run without account-specific settings.

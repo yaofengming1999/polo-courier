@@ -6,7 +6,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run POLO training or evaluation.")
     parser.add_argument(
         "--config",
-        default="yamls/base_actower.yaml",
+        default="yamls/base_polo_test.yaml",
         help="Path to the YAML configuration file.",
     )
     parser.add_argument(

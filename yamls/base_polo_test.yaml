@@ -9,8 +9,7 @@ time_interval: 120 # change to 3600 to test the slow speed on large scale
 courier_speed: 0.003
 num_test_instances: 50 # run 50 instances for evaluation
 controller_type: "polo"
-is_deep: true
-is_learning: true
+
 seed: 42
 decision_times_per_step: 500
 batch_size: 256
@@ -39,13 +38,17 @@ attention_heads: 4
 update_steps: 10
 
 ############################## Common experiment settings to adjust
-instance_size: "small"
-time_start: 12.0
-time_end: 13.0
-courier_appearance_ratio: 0.5
+instance_size: "large"
+time_start: 17.5
+time_end: 18.0
+courier_appearance_ratio: 0.1
 number_of_platforms: 2
 pruning_k: 10
 hex_size: 0.7
+
+is_deep: true
+is_learning: false
+model_load_path: "saved/large/P=2/MACTowerController_large_2_20260520_171943/latest_model.pt"
 
 temporal_platform_diff: False
 spatial_platform_diff: False

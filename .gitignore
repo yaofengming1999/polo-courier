@@ -3,5 +3,5 @@ __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
 # saved/
-# wandb/
+wandb/
 # env/meituan_order_instance/
