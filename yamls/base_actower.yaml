@@ -15,7 +15,7 @@ seed: 42
 decision_times_per_step: 500
 batch_size: 256
 buffer_size: 100000
-num_episodes: 5
+num_episodes: 1000
 num_test_instances: 50
 use_route: true
 # back_length: 10    
